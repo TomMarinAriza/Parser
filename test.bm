@@ -1,0 +1,83 @@
+// Programa de prueba para el analizador lexico de bminor
+// Contiene varios tipos de tokens
+
+function integer factorial(integer n) {
+    if (n <= 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+
+function void main() {
+    // Declaracion de variables
+    integer x = 5;
+    float pi = 3.14159;
+    boolean flag = true;
+    char letra = 'A';
+    string mensaje = "Hola mundo";
+    
+    /* Comentario de bloque
+       con multiples lineas */
+    
+    // Operadores aritmeticos
+    integer suma = x + 10;
+    integer resta = x - 2;
+    integer multiplicacion = x * 3;
+    integer division = x / 2;
+    integer modulo = x % 3;
+    integer potencia = x ^ 2;
+    
+    // Operadores de asignacion
+    x += 5;
+    x -= 2;
+    x *= 3;
+    x /= 2;
+    x %= 3;
+    
+    // Operadores de incremento/decremento
+    x++;
+    x--;
+    ++x;
+    --x;
+    
+    // Operadores de comparacion
+    if (x < 10 && x > 0) {
+        flag = x == 5;
+    }
+    
+    if (x >= 5 || x <= 15) {
+        flag = x != 7;
+    }
+    
+    if (!flag) {
+        print "El flag es falso";
+    }
+    
+    // Bucle for
+    for (integer i = 0; i < 10; i++) {
+        if (i % 2 == 0) {
+            continue;
+        }
+        
+        if (i > 7) {
+            break;
+        }
+        
+        print i;
+    }
+    
+    // Bucle while
+    integer contador = 0;
+    while (contador < 5) {
+        contador++;
+    }
+    
+    // Array y constantes
+    array integer numeros = {1, 2, 3, 4, 5};
+    const float constante = 2.718;
+    
+    // Llamada a funcion
+    integer resultado = factorial(x);
+    print resultado;
+}
