@@ -138,61 +138,6 @@ Se implementaron **26 pruebas unitarias** usando el framework **unittest** de Py
 | test_manual_programa_completo() | Programa factorial completo | Tokenizacion de programa real | Tabla detallada |
 | test_manual_errores() | Demostracion de errores | 3 tipos de errores | Mensajes de error |
 
-## Uso
-
-### Ejecutar Tests Unitarios (Normales)
-```bash
-python test_lexer.py
-```
-
-### Ejecutar Tests Unitarios con Detalle
-```bash
-python -m unittest test_lexer.py -v
-```
-
-### Ejecutar TODOS los Tests (Normales + Errores Intencionales)
-```bash
-python test_lexer.py all
-```
-
-### Ejecutar Tests Manuales (Visuales)
-```bash
-python test_manual.py
-```
-
-### Ejecutar Tests por Categoria Especifica
-```bash
-# Solo tests funcionales
-python -m unittest test_lexer.TestLexer -v
-
-# Solo tests de manejo de errores  
-python -m unittest test_lexer.TestLexerErrorHandling -v
-
-# Solo tests que deben fallar (demostracion)
-python -m unittest test_lexer.TestLexerIntentionalFailures -v
-```
-
-### Tokenizar un Archivo
-```bash
-python lex.py archivo_prueba.bm
-```
-
-### Ejemplo de Uso Interactivo
-```python
-from lex import Lexer
-
-lexer = Lexer()
-codigo = "function suma(a, b) { return a + b; }"
-tokens = list(lexer.tokenize(codigo))
-for token in tokens:
-    print(f"{token.type}: {token.value}")
-```
-
-### Ejecutar Solo Pruebas de una Clase
-```bash
-python -m unittest test_lexer.TestLexer -v
-python -m unittest test_lexer.TestLexerErrorHandling -v
-```
 
 ## Proceso de Desarrollo
 
