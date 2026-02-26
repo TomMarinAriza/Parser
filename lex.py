@@ -4,57 +4,60 @@ import sly
 
 class Lexer(sly.Lexer):
     tokens = {
-        # Palabras Reservadas
-        ARRAY, BOOLEAN, CHAR, CONSTANT, BREAK, CONTINUE, ELSE, FLOAT, FOR,
-        FUNCTION, IF, INTEGER, PRINT, RETURN, WHILE, STRING, VOID,
+        # Palabras Reservadas B-Minor+
+        CONSTANT, PRINT, RETURN, BREAK, CONTINUE, IF, ELSE, WHILE, 
+        FUNCTION, TRUE, FALSE,
 
         # Operadores de Relacion
-        LT, LE, GT, GE, EQ, NE, LAND, LOR, LNOT, INC, DEC,
+        LT, LE, GT, GE, EQ, NE, LAND, LOR, LNOT,
 
-        # Operadores de Asignacion
-        ADDEQ , SUBEQ, MULEQ, DIVEQ, MODEQ,
+        # Operadores Aritmeticos
+        PLUS, MINUS, TIMES, DIVIDE, GROW,
 
-        #Operadores Aritmeticos
-        PLUS, MINUS, TIMES, DIVIDE, MOD, GROW,
+        # Simbolos varios
+        ASSIGN, SEMI, LPAREN, RPAREN, LBRACE, RBRACE, COMA, DEREF,
 
-        #Simbolos varios
-        ASSIGN, SEMI, LPAREN ,RPAREN, LBRACE, RBRACE, COMA, DEREF,
-
-        # Identidicador
+        # Identificador
         ID,
 
         # Literales
-        INTEGER_LITERAL, FLOAT_LITERAL, CHAR_LITERAL,
-        STRING_LITERAL, TRUE, FALSE,
+        ENTERO, FLOTANTE, CHAR,
     }
+
+    # Patrones a Ignorar
+    ignore = ' \t\r'        # Whitespace
+
+    @_(r'//[^\n]*\n?')
+    def ignore_cppcomment(self, t):
+        self.lineno += 1
+   
+    @_(r'/\*(.|\n)*?\*/')
+    def ignore_comment(self, t):
+        self.lineno += t.value.count('\n')
+
+    @_(r'\n+')
+    def ignore_newline(self, t):
+        self.lineno += t.value.count('\n')
+
+    # Operadores de Relación de dos caracteres (deben ir antes que los de un carácter)
+    LE = r'<='
+    GE = r'>='
+    EQ = r'=='
+    NE = r'!='
+    LAND = r'&&'
+    LOR = r'\|\|'
+
+    # Operadores de Relacion un caracter
+    LT = r'<'
+    GT = r'>'
+    LNOT = r'!'
 
     # Operadores Aritméticos
     PLUS = r'\+'
     MINUS = r'-'
     TIMES = r'\*'
     DIVIDE = r'/'
-    MOD = r'%'
     GROW = r'\^'
-
-    # Operadores de Relación
-    LT = r'<'
-    LE = r'<='
-    GT = r'>'
-    GE = r'>='
-    EQ = r'=='
-    NE = r'!='
-    LAND = r'&&'
-    LOR = r'\|\|'
-    LNOT = r'!'
-    INC = r'\+\+'
-    DEC = r'--'
-
-    # Operadores de Asignación
-    ADDEQ = r'\+='
-    SUBEQ = r'-='
-    MULEQ = r'\*='
-    DIVEQ = r'/='
-    MODEQ = r'%='
 
     # Símbolos varios
     ASSIGN = r'='
@@ -65,93 +68,78 @@ class Lexer(sly.Lexer):
     RBRACE = r'\}'
     COMA = r','
     DEREF = r'`'
-    
-    # literals = '+-*/%^=,.:()[]{}'  # Comentado porque ahora usamos tokens específicos
 
-    # Patrones a Ignorar
-    ignore = ' \t\r'        # Whitespace
-
-    @_(r'//.*\n')
-    def ignore_cppcomment(self, t):
-        self.lineno += 1
-    
-    @_(r'/\*(.|\n)*\*/')
-    def ignore_comment(self, t):
-        self.lineno += t.value.count('\n')
-
-    @_(r'\n+')
-    def ignore_newline(self, t):
-        self.lineno += t.value.count('\n')
-
-    # Definición de Tokens
-    ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
-    # Literales
-    @_(r'\d+\.\d+')
-    def FLOAT_LITERAL(self, t):
+    # Literales - Los patrones más específicos deben ir primero
+    @_(r'\d+\.\d*|\.\d+|\d+\.')
+    def FLOTANTE(self, t):
         t.value = float(t.value)
         return t
 
     @_(r'\d+')
-    def INTEGER_LITERAL(self, t):
+    def ENTERO(self, t):
         t.value = int(t.value)
         return t
 
-    @_(r"'([^'\\]|\\.)'")
-    def CHAR_LITERAL(self, t):
+    @_(r"'(\\x[0-9a-fA-F]{2}|\\[nt'\\]|[^'\\])'")
+    def CHAR(self, t):
         # Maneja caracteres literales incluyendo secuencias de escape
         t.value = t.value[1:-1]  # Quita las comillas
         return t
 
-    @_(r'"([^"\\]|\\.)*"')
-    def STRING_LITERAL(self, t):
-        # Maneja cadenas literales incluyendo secuencias de escape
-        t.value = t.value[1:-1]  # Quita las comillas
+    # Manejo de errores para literales de caracteres sin terminar
+    @_(r"'([^'\\]|\\.)*")
+    def errorCharLiteral(self, t):
+        print(f"[red]{self.lineno}: Constante de carácter sin terminación[/red]")
+
+    # Definición de Tokens - Identificadores y palabras reservadas
+    @_(r'[a-zA-Z_][a-zA-Z0-9_]*') 
+    def ID(self, t):
+        keywords = {
+            # Keywords B-Minor+
+            'constant': 'CONSTANT',
+            'print': 'PRINT',
+            'return': 'RETURN',
+            'break': 'BREAK',
+            'continue': 'CONTINUE',
+            'if': 'IF',
+            'else': 'ELSE',
+            'while': 'WHILE',
+            'function': 'FUNCTION',
+            'true': 'TRUE',
+            'false': 'FALSE',
+        }
+        t.type = keywords.get(t.value, 'ID')  # Verifica si es una palabra reservada
         return t
 
-    # keywords
-    ID['array']   = ARRAY
-    ID['boolean'] = BOOLEAN
-    ID['char']    = CHAR
-    ID['else']    = ELSE
-    ID['false']   = FALSE
-    ID['float']   = FLOAT
-    ID['for']     = FOR
-    ID['function']= FUNCTION
-    ID['if']      = IF
-    ID['integer'] = INTEGER
-    ID['print']   = PRINT
-    ID['return']  = RETURN
-    ID['string']  = STRING
-    ID['void']    = VOID
-    ID['while']   = WHILE
-    ID['true']    = TRUE
-    ID['break']   = BREAK
-    ID['continue'] = CONTINUE
-    ID['constant']   = CONSTANT
+    # Manejo de errores para comentarios sin terminar
+    @_(r'/\*(.|\n)*')
+    def errorComment(self, t):
+        print(f"[red]{self.lineno}: Comentario sin terminación[/red]")
+        self.lineno += t.value.count('\n')
 
-    def errorCharacter(self, t):
-        # Manejo de errores
-        print(f"{self.lineno}: Carácter '{t.value[0]}' ilegal")
+    def error(self, t):
+        print(f"[red]{self.lineno}: Carácter '{t.value[0]}' ilegal[/red]")
         self.index += 1
-    
-    @_(r'/\*([^*]|\*(?!/))*$')
-    def errorComments(self, t):
-        print(f"{self.lineno}: Comentario sin cerrar")
 
+
+# Pruebas unitarias
 def tokenize(source):
-    lex = Lexer()
-
-    for tok in lex.tokenize(source):
+    """Tokeniza el código fuente y muestra los tokens encontrados"""
+    lexer = Lexer()
+    for tok in lexer.tokenize(source):
         print(tok)
 
 
 if __name__ == '__main__':
     import sys
-
-    if len(sys.argv) != 2:
-        print('Usage: python lexer.py filename')
-        raise SystemExit
-    
-    txt = open(sys.argv[1], encoding='utf-8').read()
-    tokenize(txt)
+    if len(sys.argv) == 2:
+        try:
+            txt = open(sys.argv[1], encoding='utf-8').read()
+            tokenize(txt)
+        except FileNotFoundError:
+            print(f"[red]Error: Archivo '{sys.argv[1]}' no encontrado.[/red]")
+            raise SystemExit(1)
+    else: 
+        print('Uso: python lex.py <archivo.txt>')
+        print('Para ejecutar pruebas: python test_lexer.py')
+        raise SystemExit(1)
