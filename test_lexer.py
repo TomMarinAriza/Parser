@@ -31,21 +31,21 @@ class TestLexer(unittest.TestCase):
     def test_literales_enteros(self):
         """Test 3: Verificar literales enteros"""
         source = "123 0 456 999"
-        expected = ['ENTERO', 'ENTERO', 'ENTERO', 'ENTERO']
+        expected = ['INTEGER_LITERAL', 'INTEGER_LITERAL', 'INTEGER_LITERAL', 'INTEGER_LITERAL']
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Literales enteros no coinciden")
 
     def test_literales_flotantes(self):
         """Test 4: Verificar literales flotantes"""
         source = "1.234 .1234 1234. 0.0 99.99"
-        expected = ['FLOTANTE', 'FLOTANTE', 'FLOTANTE', 'FLOTANTE', 'FLOTANTE']
+        expected = ['FLOAT_LITERAL', 'FLOAT_LITERAL', 'FLOAT_LITERAL', 'FLOAT_LITERAL', 'FLOAT_LITERAL']
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Literales flotantes no coinciden")
 
     def test_literales_caracteres(self):
         """Test 5: Verificar literales de caracteres"""
         source = "'a' '\\n' '\\x41' '\\''"
-        expected = ['CHAR', 'CHAR', 'CHAR', 'CHAR']
+        expected = ['CHAR_LITERAL', 'CHAR_LITERAL', 'CHAR_LITERAL', 'CHAR_LITERAL']
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Literales de caracteres no coinciden")
 
@@ -87,7 +87,7 @@ class TestLexer(unittest.TestCase):
     def test_condicionales_con_operadores(self):
         """Test 11: Verificar condicionales con operadores"""
         source = "if (x <= 10 && y >= 5) { print x; }"
-        expected = ['IF', 'LPAREN', 'ID', 'LE', 'ENTERO', 'LAND', 'ID', 'GE', 'ENTERO', 'RPAREN', 'LBRACE', 'PRINT', 'ID', 'SEMI', 'RBRACE']
+        expected = ['IF', 'LPAREN', 'ID', 'LE', 'INTEGER_LITERAL', 'LAND', 'ID', 'GE', 'INTEGER_LITERAL', 'RPAREN', 'LBRACE', 'PRINT', 'ID', 'SEMI', 'RBRACE']
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Condicionales con operadores no coinciden")
 
@@ -101,14 +101,14 @@ class TestLexer(unittest.TestCase):
     def test_variables_constantes(self):
         """Test 13: Verificar variables y constantes"""
         source = "constant PI = 3.14159; x = 'A';"
-        expected = ['CONSTANT', 'ID', 'ASSIGN', 'FLOTANTE', 'SEMI', 'ID', 'ASSIGN', 'CHAR', 'SEMI']
+        expected = ['CONSTANT', 'ID', 'ASSIGN', 'FLOAT_LITERAL', 'SEMI', 'ID', 'ASSIGN', 'CHAR_LITERAL', 'SEMI']
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Variables y constantes no coinciden")
 
     def test_expresiones_complejas(self):
         """Test 14: Verificar expresiones complejas"""
         source = "result = (a * b) + (c / d) ^ 2;"
-        expected = ['ID', 'ASSIGN', 'LPAREN', 'ID', 'TIMES', 'ID', 'RPAREN', 'PLUS', 'LPAREN', 'ID', 'DIVIDE', 'ID', 'RPAREN', 'GROW', 'ENTERO', 'SEMI']
+        expected = ['ID', 'ASSIGN', 'LPAREN', 'ID', 'TIMES', 'ID', 'RPAREN', 'PLUS', 'LPAREN', 'ID', 'DIVIDE', 'ID', 'RPAREN', 'GROW', 'INTEGER_LITERAL', 'SEMI']
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Expresiones complejas no coinciden")
 
@@ -208,7 +208,7 @@ class TestLexerIntentionalFailures(unittest.TestCase):
         """Test que DEBE fallar: Literal mal formado"""
         source = "'abc'"  # Caracter literal con mas de un caracter
         # Este test DEBE fallar porque los char literales deben tener un solo caracter
-        expected = ['CHAR']  # Esto no deberia ser reconocido como CHAR valido
+        expected = ['CHAR_LITERAL']  # Esto no deberia ser reconocido como CHAR valido
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Este test DEBE fallar - literal char invalido")
 
@@ -216,7 +216,7 @@ class TestLexerIntentionalFailures(unittest.TestCase):
         """Test que DEBE fallar: Numero flotante mal formado"""
         source = "12..34"  # Dos puntos seguidos
         # Este test DEBE fallar porque el numero esta mal formado
-        expected = ['FLOTANTE']  # No deberia reconocerse como flotante valido
+        expected = ['FLOAT_LITERAL']  # No deberia reconocerse como flotante valido
         result = self.get_token_types(source)
         self.assertEqual(result, expected, "Este test DEBE fallar - numero mal formado")
 

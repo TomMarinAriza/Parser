@@ -6,7 +6,7 @@ class Lexer(sly.Lexer):
     tokens = {
         # Palabras Reservadas B-Minor+
         CONSTANT, PRINT, RETURN, BREAK, CONTINUE, IF, ELSE, WHILE, 
-        FUNCTION, TRUE, FALSE,
+        FUNCTION, TRUE, FALSE, CLASS,
 
         # Operadores de Relacion
         LT, LE, GT, GE, EQ, NE, LAND, LOR, LNOT,
@@ -15,17 +15,17 @@ class Lexer(sly.Lexer):
         PLUS, MINUS, TIMES, DIVIDE, GROW,
 
         # Simbolos varios
-        ASSIGN, SEMI, LPAREN, RPAREN, LBRACE, RBRACE, COMA, DEREF,
+        ASSIGN, SEMI, LPAREN, RPAREN, LBRACE, RBRACE, COMA, DEREF, LBRACKET, RBRACKET, COLON,
 
         # Identificador
         ID,
 
         # Literales
-        ENTERO, FLOTANTE, CHAR,
+        INTEGER_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STRING_LITERAL,
     }
 
     # Patrones a Ignorar
-    ignore = ' \t\r'        # Whitespace
+    ignore = ' \t\r'        
 
     @_(r'//[^\n]*\n?')
     def ignore_cppcomment(self, t):
@@ -39,7 +39,7 @@ class Lexer(sly.Lexer):
     def ignore_newline(self, t):
         self.lineno += t.value.count('\n')
 
-    # Operadores de Relación de dos caracteres (deben ir antes que los de un carácter)
+    # Operadores de Relación de dos caracteres 
     LE = r'<='
     GE = r'>='
     EQ = r'=='
@@ -68,23 +68,41 @@ class Lexer(sly.Lexer):
     RBRACE = r'\}'
     COMA = r','
     DEREF = r'`'
+    LBRACKET = r'\['
+    RBRACKET = r'\]'
+    COLON = r':'
 
-    # Literales - Los patrones más específicos deben ir primero
+    # Literales 
     @_(r'\d+\.\d*|\.\d+|\d+\.')
-    def FLOTANTE(self, t):
+    def FLOAT_LITERAL(self, t):
         t.value = float(t.value)
         return t
 
     @_(r'\d+')
-    def ENTERO(self, t):
+    def INTEGER_LITERAL(self, t):
         t.value = int(t.value)
         return t
 
-    @_(r"'(\\x[0-9a-fA-F]{2}|\\[nt'\\]|[^'\\])'")
-    def CHAR(self, t):
+    @_(r"'(\\x[0-9a-fA-F]{2}|\\[abefnrtv\\'\"\\]|[^'\\])'")
+    def CHAR_LITERAL(self, t):
         # Maneja caracteres literales incluyendo secuencias de escape
         t.value = t.value[1:-1]  # Quita las comillas
         return t
+    
+    @_(r'"([^"\\]|\\.)*"')
+    def STRING_LITERAL(self, t):
+        # Maneja literales de cadena incluyendo secuencias de escape
+        t.value = t.value[1:-1]  
+        return t
+    # Manejo de errores para literales de cadena sin terminar
+    @_(r'\"([^\"\\\\]|\\\\.)*')
+    def errorStringLiteral(self, t):
+        print(f"[red]{self.lineno}: Literal de cadena sin terminación[/red]")
+        self.lineno += t.value.count('\n')
+    # Error específico: literal de carácter con más de 1 elemento
+    @_(r"'([^'\\]|\\.){2,}'")
+    def errorCharTooLong(self, t):
+        print(f"[red]{self.lineno}: Literal de carácter con más de un elemento[/red]")
 
     # Manejo de errores para literales de caracteres sin terminar
     @_(r"'([^'\\]|\\.)*")
@@ -107,8 +125,9 @@ class Lexer(sly.Lexer):
             'function': 'FUNCTION',
             'true': 'TRUE',
             'false': 'FALSE',
+            'class': 'CLASS',
         }
-        t.type = keywords.get(t.value, 'ID')  # Verifica si es una palabra reservada
+        t.type = keywords.get(t.value, 'ID') 
         return t
 
     # Manejo de errores para comentarios sin terminar

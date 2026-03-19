@@ -4,6 +4,19 @@
 
 Este proyecto implementa un analizador léxico (lexer) completo para el lenguaje B-Minor+. El lexer es responsable de convertir texto sin formato en símbolos reconocidos conocidos como tokens.
 
+## Estructura actual del proyecto
+
+- `lex.py`: analizador léxico con SLY.
+- `parser.py`: analizador sintáctico (parser) con SLY que construye un AST en forma de diccionarios/listas.
+- `errors.py`: utilidades compartidas para reporte y conteo de errores.
+- `samples/`: contiene todos los archivos de ejemplo `good*.bminor` y `bad*.bminor`.
+
+### Ejecutar parser
+
+```bash
+python parser.py samples/good7.bminor
+```
+
 ## Características Implementadas
 
 ### Keywords Reservadas
